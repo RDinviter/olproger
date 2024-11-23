@@ -1,0 +1,230 @@
+<html>
+<head>
+ <link rel="stylesheet" href="static/css/about_olimp.css">
+</head>
+
+<body>
+  <form class="main_text">
+    <div class="txt">
+      <h1 class="title"><b>Префсуммы</b></h1>
+      <div class='comments'>Префикс - подотрезок массива, который начинается с нулевого индекса</div>
+      <div class='comments'>Суффикс - подотрезок массива, заканчивающийся последним индексом</div>
+      <p class='tab'><b>Префиксными суммами</b> массива [a<sub class="low">0</sub>,
+        a<sub class="low">1</sub>, a<sub class="low">2</sub>, ..., a<sub class="low">n−1</sub>] называется
+массив [pref<sub class="low">0</sub>, pref<sub class="low">1</sub>, pref<sub class="low">2</sub>, ..., pref<sub class="low">n</sub>], определяющийся следующим образом:<br></p>
+<div class="define">
+pref<sub style="background-color:#BC8F8F;">0</sub> = 0<br>
+pref<sub style="background-color:#BC8F8F;">1</sub> = a<sub  style="background-color:#BC8F8F;">0</sub><br>
+pref<sub style="background-color:#BC8F8F;">2</sub> = a<sub style="background-color:#BC8F8F;">0</sub> +a<sub style="background-color:#BC8F8F;">1</sub><br>
+pref<sub style="background-color:#BC8F8F;">3</sub> = a<sub style="background-color:#BC8F8F;">0</sub> +a<sub style="background-color:#BC8F8F;">1</sub> +a<sub style="background-color:#BC8F8F;">2</sub><br>
+...<br>
+pref<sub class="low">n-1</sub> = a<sub class="low">0</sub> +a<sub class="low">1</sub> +...+a<sub class="low">n-2</sub><br>
+pref<sub class="low">n</sub> = a<sub class="low">0</sub> +a<sub class="low">1</sub> +...+a<sub class="low">n-1</sub><br>
+</div>
+
+
+<b>Формулу для pref<sub class="low">i</sub> можно записать рекуррентно:</b>
+<div class="define">
+pref<sub class="low">0</sub> = 0<br>
+pref<sub class="low">i+1</sub> = pref<sub class="low">i</sub> +a<sub class="low">i</sub>,   где i > 0
+</div>
+
+<p class="tab">Из рекуррентной формулы сразу становится ясно, как посчитать массив префиксных сумм за O(n):</p>
+<pre class="code">
+for (int i = 0; i &lt n; i++) {
+  pref[i + 1] = pref[i]  + a[i];
+}
+</pre>
+<p class="tab">Обратите внимание, что элементы массива префиксных сумм —
+это суммы большого количества элементов исходного массива, поэтому будьте
+аккуратнее с переполнением. И вообще, на протяжении всей этой темы вы можете
+столкнуться с переполнением, поэтому будьте всегда начеку! Возможно, вам нужен
+тип <b>long long</b> вместо <b>int</b>.</p>
+
+<p class="tab">У нас уже есть две интуиции для понимания pref<sub class="low">i</sub>: сумма первых i
+элементов исходного массива и сумма элементов исходного массива на полуинтервале
+[0,i]. Давайте посмотрим на еще один вариант того, как об этом можно думать.
+Можно представить, что элементы массива находятся в ячейках, а префиксные
+суммы находятся между ними — на перегородках. И содержат в себе суммы всего
+того, что находится перед этой перегородкой.</p>
+<p class="aligncenter">
+  <a href="https://iimg.su/i/NsJCp">
+  <img class="photo" src="https://s.iimg.su/s/17/th_g4DRpUdCFNXBaCcBTyYKiUlMDWOwjAuWO8UfYlcn.jpg">
+  </a>
+</p>
+Давайте сразу же применим префиксные суммы на примере задачи.<br>
+<b>Задача 1</b><br>
+<p class="tab">Вам дан массив a длины n и q запросов вида l<sub class="low">i</sub> r<sub class="low">i</sub>. Для каждого запроса найдите сумму на
+ отрезке [l; r] массива a.</p>
+<b>Решение</b><br>
+Банальное решение (если просто циклом q раз считать сумму от l до r) будет работать на O(nq). Но оно нас не интересует.<br>
+<p class="tab">Давайте изначально перед ответами на запросы предпосчитаем массив
+префиксных сумм. Тогда если бы во всех запросах l было равно нулю, то ответом
+на запрос была бы просто префиксная сумма pref<sub class="low">r</sub>
+.
+Но как же действовать, если l != 0? В префиксной сумме pref<sub class="low">r</sub> содержатся все
+нужные нам элементы, однако есть еще лишние: a<sub class="low">0</sub>,a<sub class="low">1</sub>,...,a<sub class="low">l−1</sub>. Но ведь сумма этих
+элементов — это как раз таки pref<sub class="low">l</sub>
+. Таким образом, выполнено тождество:</p>
+<div class="define">a<sub class="low">l</sub> +a<sub class="low">l+1</sub> +...+a<sub class="low">r-1</sub> = pref<sub class="low">r+1</sub> − pref<sub class="low">l</sub></div>
+<p class="tab">То есть для ответа на запрос поиска суммы на полуинтервале нужно просто
+вычесть друг из друга две предпосчитанные префиксные суммы. Вот мое решение данной задачи:</p>
+<pre class="code">
+#include &ltbits/stdc++.h>
+using namespace std;
+
+int main(){
+    int n, q;
+    cin >> n;
+
+    vector &ltlong long> pref(n + 1, 0);
+    vector &ltint> arr(n);
+
+    for (int i = 0; i &lt  n; i++) {
+        cin >> arr[i];
+    }
+    for (int i = 0; i &lt  n; i++) {
+        pref[i + 1] = pref[i] + arr[i];
+    }
+
+    cin >> q;
+    for (int w = 0; w &lt  q; w++) {
+        int l, r;
+        cin >> l >> r;
+        l--; r--;
+        cout &lt &lt  pref[r + 1] - pref[l] << " ";
+    }
+    return 0;
+}
+</pre>
+
+<h2>Двумерный случай</h2>
+<p class='tab'>Мы уже научились искать сумму на отрезке в одномерном массиве при помощи
+префиксных сумм, но префиксные суммы легко обобщаются и на б´ольшие размерности.
+Давайте научимся искать сумму на прямоугольнике в двумерном массиве. Пусть нам
+дан двумерный массив a<sub class="low">i, j</sub>. Определим его префиксные суммы так:</p>
+<p class="aligncenter">
+    <img src="images/pref_2.JPG" class='photo'>
+</p>
+<div class=comments>Если кто-то не знает, знак ∑ обозначает сумму, читается как "сигма"</div>
+
+<p class="tab">Вновь воспользоваться рекуррентной формулой. Это будет немного сложнее, чем в одномерном случае. Формула
+выглядит следующим образом:</p>
+
+<div class='define'>pref<sub class="low">i+1, j+1</sub> = pref<sub class="low">i, j+1</sub> + pref<sub class="low">i+1, j</sub> − pref<sub class="low">i, j</sub> + a<sub class="low">i, j</sub></div>
+
+<p class='tab'>Эту формулу легко понять из картинки (зеленая область также принадлежит синей
+и желтой):</p>
+
+<p class="aligncenter">
+    <img src="images/pref_3.JPG" class='photo'>
+</p>
+
+<p class="tab">Мы берем сумму двух меньших префиксных сумм, которые накрывают нашу, однако
+их пересечение учтется дважды, поэтому его надо вычесть. Но ведь это пересечение —
+это и есть pref<sub class="low">i, j</sub>
+. И в конце стоит не забыть прибавить новый элемент — a<sub class="low">i, j</sub>.
+Элементы, через которые мы считаем pref<sub class="low">i+1, j+1</sub> имеют меньшие индексы, поэтому
+подсчет двумерных префиксных сумм можно вести просто двумя вложенными циклами
+по возрастанию.</p>
+
+<pre class="code">
+for (int i = 1; i <= n; i++) {
+    for (int j = 1; j <= m; j++) {
+        pref[i][j] = pref[i - 1][j] + pref[i][j - 1] +
+        arr[i - 1][j - 1] - pref[i - 1][j - 1];
+    }
+}
+</pre>
+<p class='tab'>Рассмотрим задачу:<br>
+Вам дана матрица a размером n × m и q запросов вида l<sub class="low">xi</sub>, l<sub class="low">yi</sub>, r<sub class="low">xi</sub>, r<sub class="low">yi</sub>.
+Для каждого запроса
+найдите сумму на подматрице [(l<sub class="low">x</sub>, l<sub class="low">y</sub>),(r<sub class="low">x</sub>, r<sub class="low">y</sub>)] матрицы a.</p>
+<p class='tab'>Здесь, как и далее я буду выпускать часть кода и оставлять только сам алгоритм.</p>
+<pre class="code">
+for (int i = 1; i &lt= n; i++) {
+    for (int j = 1; j &lt= m; j++) {
+        pref[i][j] = pref[i - 1][j] + pref[i][j - 1] +
+        arr[i - 1][j - 1] - pref[i - 1][j - 1];
+    }
+}
+
+ll q, sum;
+cin >> q;
+
+for (int i = 0; i &lt q; i++) {
+    int i1, j1, i2, j2;
+    cin >> i1 >> j1 >> i2 >> j2;
+
+    sum = pref[i2][j2] - pref[i2][j1 - 1] -
+    pref[i1 - 1][j2] + pref[i1 - 1][j1 - 1];
+
+    cout &lt&lt sum &lt&lt " ";
+}
+</pre>
+
+<p class='tab'>Формулу для суммы легче понимать, смотря на картинку:</p>
+<p class="aligncenter">
+      <img src="images/pref_4.JPG" class='photo'>
+</p>
+<p class='tab'>Сначала мы взяли большой прямоугольник, который накрывает нужный нам,
+потом удалили ненужное слева и сверху, но то, что находится на их пересечении, мы
+удалили дважды, так что надо вернуть это пересечение назад.</p>
+
+<h2>Разностный массив</h2>
+<p class='tab'>Мы уже научились по массиву строить его массив префиксных сумм. А теперь давайте
+научимся по массиву префиксных сумм строить исходный массив, то есть применять
+обратную операцию</p>
+Разностным массивом массива [diff<sub class="low">0</sub>, diff<sub class="low">1</sub>, ..., diff<sub class="low">n−1</sub>] называется
+массив [a<sub class="low">0</sub>, a<sub class="low">1</sub>, ..., a<sub class="low">n−2</sub>], определяющийся следующим образом:
+<div class='define'>
+a<sub class="low">0</sub> = diff<sub class="low">1</sub> − diff<sub class="low">0</sub><br>
+a<sub class="low">1</sub> = diff<sub class="low">2</sub> − diff<sub class="low">1</sub><br>
+a<sub class="low">2</sub> = diff<sub class="low">3</sub> − diff<sub class="low">2</sub><br>
+...
+a<sub class="low">n−3</sub> = diff<sub class="low">n−2</sub> − diff<sub class="low">n−3</sub><br>
+a<sub class="low">n−2</sub> = diff<sub class="low">n−1</sub> − diff<sub class="low">n−2</sub><br>
+</div>
+
+<p class='tab'>Очевидно, что если diff — массив префиксных сумм массива a, то массив a — разностный массив массива diff, потому что формула a<sub>i</sub> = diff<sub>i+1</sub> − diff<sub>i</sub> — это просто преобразованная
+рекуррентная формула для поиска префиксных сумм: diff<sub>i+1</sub> = diff<sub>i</sub>+a<sub>i</sub>. Однако разностный
+массив может помочь нам даже там, где массивом префиксных сумм и не пахнет!
+Также обратите внимание, что если для подсчета массива префиксных сумм была
+нужна рекуррентная формула, то каждый член разностного массива зависит всего от
+двух элементов исходного, так что можно пользоваться формулами из определения
+для подсчета разностного массива за O(n).</p>
+
+<pre class='code'>
+for (int i = 0; i &lt n - 1; i++) {
+    diffs[i] = arr[i + 1] - arr[i];
+}
+</pre>
+<b>Применения разностного массива</b><br>
+<p class='tab'>Рассмотрим задачу:<br>
+У вас есть массив a из нулей размера n и q запросов вида l<sub>i</sub>, r<sub>i</sub>, d<sub>i</sub>.
+ Произведите q прибавлений
+числа d<sub>i</sub> к массиву a на отрезке [l<sub>i</sub>, r<sub>i</sub>].</p>
+Мы можем прибавить d<sub>i</sub> только элементу с индексом l<sub>i</sub> и вычесть у элемента r<sub>i</sub>.
+То, что между ними проссчитается автоматически при восстановлении разностного массива.
+<pre class='code'>
+vector &ltlong long> diff(n, 0);
+
+for (int i = 0; i &lt q; i++) {
+    long long l, r, d;
+    cin >> l >> r >> d;
+    l--; r--;
+    diff[l] += d;
+    diff[r + 1] -= d;
+}
+long long p = 0;
+
+for (long long i = 0; i &lt n; i++) {
+    p += diff[i];
+    cout &lt&lt p << " ";
+}
+</pre>
+
+  </div>
+  </form>
+</body>
+</html>
