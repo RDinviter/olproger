@@ -1,0 +1,55 @@
+* {
+  text-align: center;
+  justify-content: center;
+  font-family: "Comic Sans MS", "Comic Sans", cursive;
+  background: #778899;
+}
+
+h2 {
+  background: inherit;
+}
+
+#main_title {
+
+  text-align: center;
+  font-size: 2em;
+}
+
+.buttons{
+  background: #B0C4DE;
+  cursor: pointer;
+  width: 70%;
+  height: 4em;
+  box-shadow: 5px 5px 0 0;
+  transition: 0.3s;
+  justify-content: center;
+  align-items: center;
+  /*background-color:	#B0C4DE;*/
+  font-size: 1em;
+  border-radius: 0.5em;
+}
+
+.another_but {
+  width: 60%;
+  height: 3.5em;
+  background-color:	inherit;
+  font-size: 1em;
+  border-radius: 1.25em;
+}
+
+.buttons:hover {
+  box-shadow: -5px -5px 0 0;
+  transform: scale(0.9);
+}
+
+.buttons::after {
+  content: "";
+  top: 0;
+  left: 0;
+  opacity: 0;
+  transition: 0.3s;
+}
+
+.buttons:hover::after {
+  opacity: 1;
+}
