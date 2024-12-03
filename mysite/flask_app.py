@@ -46,3 +46,8 @@ def binary_search():
 @app.route('/stl')
 def stl():
     return render_template("STL.html")
+
+
+@app.route('/recursion')
+def recursion():
+    return render_template("recursion.html")
